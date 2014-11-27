@@ -48,9 +48,10 @@ public class ImageHolder extends JFrame {
         revalidate();
         repaint();
         try{
-            File newImage = new File("Saved.png");
-            ImageIO.write(rleImage, "BMP", newImage);
+            File newImage = new File("Saved.bmp");
+            ImageIO.write(rleImage, "BMP_RLE8", newImage);
         }catch(Exception e){
+            e.printStackTrace();
             System.out.println("something fucked up");
         }
     }

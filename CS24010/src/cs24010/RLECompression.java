@@ -15,6 +15,7 @@ import java.util.Observable;
 import java.awt.Image;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -24,6 +25,9 @@ import java.util.Arrays;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.imageio.ImageIO;
+import javax.imageio.ImageReader;
+import javax.imageio.plugins.bmp.BMPImageWriteParam;
+import javax.imageio.spi.ImageReaderSpi;
 
 
 public class RLECompression implements Runnable {
@@ -50,14 +54,16 @@ public class RLECompression implements Runnable {
     }
     
     private BufferedImage compress(){
+        
         System.out.println("Compressing");
         imageByteArray = imageData.byteArray(image);
-        ByteBuffer runLengthEncode = getRunLength();        
-        System.out.println(runLengthEncode);
+        byte[] runLengthEncode = getRunLength();        
+        //System.out.println(runLengthEncode);
         stringToImage(runLengthEncode);
         System.out.println("Finished Compressing");
         return imageRLE;
     }
+    
     
     public void writeToFiles(String x){        
         try{
@@ -74,14 +80,31 @@ public class RLECompression implements Runnable {
         
     }
     
-    public BufferedImage stringToImage(ByteBuffer runLengthEncode){
-        byte[] dest = null;
-        runLengthEncode.get(dest);
-        ByteArrayInputStream bais = new ByteArrayInputStream(dest);
+    public BufferedImage stringToImage(byte[] runLengthEncode){        
+        ByteArrayInputStream bais = new ByteArrayInputStream(runLengthEncode);
         try{
-            imageRLE = ImageIO.read(new ByteArrayInputStream(dest));
-        }catch(IOException e){
+            PrintWriter pw = new PrintWriter("runLength2.txt");
+            PrintWriter pw2 = new PrintWriter("original2.txt");
+            for(int i = 0; i < imageByteArray.length; i++)
+                pw2.print(imageByteArray[i]+", ");
+            for(int i = 0; i < runLengthEncode.length; i++)
+                pw.print(runLengthEncode[i]);
+            pw.close();
+            pw2.close();
+        }catch(Exception e){
             
+        }
+        
+        try{
+            
+            
+            File file = new File("runLength.txt");
+            imageRLE = ImageIO.read(bais);
+            
+            ImageIO.write(imageRLE, "bmp", new File("newImage.bmp"));
+            
+        }catch(IOException e){
+            e.printStackTrace();
         }
         //decode(runLengthEncode);
         if(imageRLE == null)
@@ -89,24 +112,25 @@ public class RLECompression implements Runnable {
         return imageRLE;
     }
     
-    public ByteBuffer getRunLength(){
-        ByteBuffer dest = ByteBuffer.wrap(new byte[imageByteArray.length]);
-        dest.put(imageByteArray);
-        dest.flip();
-        for(int i =0; i < imageByteArray.length; i++){
-            int runlength = 1;
-            while(i+1 < imageByteArray.length && imageByteArray[i] == imageByteArray[i+1]){
-                runlength++;
-                i++;
-                
-            }     
-            
-            
-            dest.putInt(runlength);            
-            dest.put(imageByteArray[i]);
-            
+    public byte[] getRunLength(){
+        ByteArrayOutputStream dest = new ByteArrayOutputStream();  
+        byte lastByte = imageByteArray[0];
+        int matchCount = 1;
+        for(int i=1; i < imageByteArray.length; i++){
+            byte thisByte = imageByteArray[i];
+            if (lastByte == thisByte) {
+                matchCount++;
+            }
+            else {
+                dest.write((byte)matchCount);  
+                dest.write((byte)lastByte);
+                matchCount=1;
+                lastByte = thisByte;
+            }                
         }
-        return dest;
+        dest.write((byte)matchCount);  
+        dest.write((byte)lastByte);
+        return dest.toByteArray();
     }
     
     public BufferedImage decode(String source){
