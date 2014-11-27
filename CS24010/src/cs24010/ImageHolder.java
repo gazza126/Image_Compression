@@ -19,10 +19,8 @@ import java.io.File;
 public class ImageHolder extends JFrame {
     ImagePanels pnlrleImage, pnlhuffImage, pnlimage;
     private BufferedImage rleImage, huffImage, image;
-    private Thread rleCompressThread;
-    //private Thread huffmanCompressThread;
-    RLECompression rleCompress;
-    //HuffmanCompression huffmanCompress;
+    private Thread rleCompressThread;    
+    RLECompression rleCompress;    
     private ImageChecker imageObserver = new ImageChecker();
     ImageData imageData = new ImageData();
     
@@ -35,33 +33,15 @@ public class ImageHolder extends JFrame {
         System.out.println("Buffering image");
         this.image =imageData.toBufferedImage(image);        
         System.out.println("creating RLE compression thread");
-        rleCompress = new RLECompression(image, imageObserver);
-        //huffmanCompress = new HuffmanCompression(image, imageObserver);
+        rleCompress = new RLECompression(image, imageObserver);        
         System.out.println("Starting threads");
-        startThread();
-        System.out.println("Getting compressed image");
-        rleImage = rleCompress.getRLE();
-        System.out.println("adding rle image panel.");
-        pnlrleImage = new ImagePanels(rleImage);
-        add(pnlrleImage);
-        System.out.println("panel added");
-        revalidate();
-        repaint();
-        try{
-            File newImage = new File("Saved.bmp");
-            ImageIO.write(rleImage, "BMP_RLE8", newImage);
-        }catch(Exception e){
-            e.printStackTrace();
-            System.out.println("something fucked up");
-        }
+        startThread();       
     }
     
     public void startThread(){
-        rleCompressThread = new Thread(rleCompress, "RLECompression");
-        //huffmanCompressThread = new Thread(huffmanCompress, "HuffmanCompression");
-        rleCompressThread.start();
-        //huffmanCompressThread.start();
-        while(rleCompressThread.isAlive()){ //|| huffmanCompressThread.isAlive()){
+        rleCompressThread = new Thread(rleCompress, "RLECompression");        
+        rleCompressThread.start();        
+        while(rleCompressThread.isAlive()){
             try{
                 Thread.sleep(1);
             }

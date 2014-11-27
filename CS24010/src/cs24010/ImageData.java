@@ -12,6 +12,7 @@ package cs24010;
 import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.image.*;
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import javax.imageio.ImageIO;
@@ -58,6 +59,15 @@ public class ImageData {
     return bimage;
 }
     
+    
+    /*public BufferedImage createBufferedImage (byte[] source, byte[] encoded){
+        try{
+            BufferedImage image = ImageIO.read(new ByteArrayInputStream(source));
+            image.getColorModel();            
+        }catch(IOException e){
+            System.out.println(e.getMessage());
+        }
+    }*/
     
     public byte[] byteArray(BufferedImage image){
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
